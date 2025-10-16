@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+httpx
+python-dateutil
+Jinja2
+docker
+docker[ssh]
+backoff
+PyYAML
+requests
+pytest
+openai
