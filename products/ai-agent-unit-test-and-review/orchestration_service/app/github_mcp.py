@@ -144,7 +144,7 @@ class MCPClient:
 GITHUB_API_BASE_URL = os.environ.get("GITHUB_API_BASE_URL", "https://api.github.com")
 
 # Initialize the client with the configurable base URL
-mcp_client = MCPClient(GITHUB_API_BASE_URL, os.environ.get("GITHUB_TOKEN", "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"))
+mcp_client = MCPClient(GITHUB_API_BASE_URL, os.environ.get("GITHUB_TOKEN"))
 
 def get_pr_diff(pr_url: str) -> str:
     """Fetches the diff of a GitHub pull request."""
