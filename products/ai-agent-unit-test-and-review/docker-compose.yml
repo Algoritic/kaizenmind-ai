@@ -1,0 +1,66 @@
+services:
+  orchestration_service:
+    build: ./orchestration_service
+    env_file: .env
+    ports: ["8000:8000"]
+    volumes:
+      - ./orchestration_service:/app
+    environment:
+      - GITHUB_API_BASE_URL= # Value is set in .env
+      # OPENAI SDK will use these for routing and auth:
+      - OPENAI_MODEL=${OPENAI_MODEL} # Tells the agent which model to use (e.g., gpt-4o)
+      - OPENAI_API_KEY=${OPENAI_API_KEY} # OpenAI SDK automatically finds this key
+      # OPENAI_API_BASE is optional, used for proxies or Azure endpoints:
+      # - OPENAI_API_BASE=${OPENAI_API_BASE}
+      # Ensure LLM_MODEL is set in .env to specify the model (e.g., gemini-pro)
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - review_service
+      - pentest_service
+    deploy:
+      resources:
+        limits:
+          cpus: '3.0'
+          memory: 4g
+
+  review_service:
+    build: ./review_service
+    env_file: .env
+    # ports: ["8001:8000"] # Expose on a different port to avoid conflict
+    environment:
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2g
+
+  pentest_service:
+    build: ./pentest_service
+    env_file: .env
+    # ports: ["8002:8000"] # Expose on a different port to avoid conflict
+    environment:
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2g
+
+  ui_service:
+    build: ./ui_service
+    env_file: .env
+    ports: ["8501:8501"]
+    environment:
+      API_BASE_URL: http://orchestration_service:8000
+    depends_on: [orchestration_service, review_service, pentest_service]
