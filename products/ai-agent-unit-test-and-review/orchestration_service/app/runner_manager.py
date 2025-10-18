@@ -1,7 +1,7 @@
 # runner.py (or wherever your function lives)
 import os, io, time, tarfile
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Dict
 import docker
 from docker.errors import DockerException, APIError
 
@@ -43,11 +43,13 @@ def _get_docker_client() -> docker.DockerClient:
         )
     return client
 
-def run_in_container(lang: str, repo_dir: Path) -> Tuple[int, str]:
+def run_in_container(lang: str, repo_dir: Path) -> Tuple[int, str, Dict[str, bytes]]:
     image = LANG_IMAGE[lang]
     client = _get_docker_client()
 
     container = None
+    container_files = {} # NEW: dictionary to store fetched files
+
     try:
         # Create container (read-only rootfs for safety, but tmpfs at /workspace so we can write)
         container = client.containers.create(
@@ -55,13 +57,13 @@ def run_in_container(lang: str, repo_dir: Path) -> Tuple[int, str]:
             command=["/bin/bash", "-lc", "/runner/run.sh"],
             detach=True,
             network_disabled=True,
-            user="1000:1000",  # ensure your /runner/run.sh is readable; or drop this to run as image default
+            user="1000:1000",
             mem_limit=MEM,
             nano_cpus=int(CPU * 1e9),
             security_opt=["no-new-privileges:true"],
             read_only=True,
             working_dir="/workspace",
-            tmpfs={"/workspace": ""},  # <-- critical for put_archive with read_only rootfs
+            tmpfs={"/workspace": ""},
         )
 
         # Upload repo
@@ -80,12 +82,29 @@ def run_in_container(lang: str, repo_dir: Path) -> Tuple[int, str]:
                 break
 
         exit_code = container.wait().get('StatusCode', 99)
-        return exit_code, ''.join(output_chunks)
+        
+        # NEW: Fetch artifact files (e.g., coverage.xml) from the container before removal
+        if lang == "python":
+             # Python coverage report is at /workspace/coverage.xml
+            try:
+                strm, _ = container.get_archive("/workspace/coverage.xml")
+                tar_data = b"".join(strm)
+                tar_io = io.BytesIO(tar_data)
+                with tarfile.open(fileobj=tar_io, mode="r") as tar:
+                    # The file inside the tar is './coverage.xml'
+                    f = tar.extractfile("./coverage.xml")
+                    if f:
+                        container_files["coverage.xml"] = f.read()
+            except Exception as e:
+                output_chunks.append(f"\n[runner] WARN: Could not fetch coverage.xml: {e}\n")
+
+
+        return exit_code, ''.join(output_chunks), container_files # MODIFIED: Return files
 
     except (APIError, DockerException, PermissionError) as e:
-        return 98, f"[runner] Docker/Podman error: {e}"
+        return 98, f"[runner] Docker/Podman error: {e}", container_files # MODIFIED
     except Exception as e:
-        return 97, f"[runner] Unexpected error: {e}"
+        return 97, f"[runner] Unexpected error: {e}", container_files # MODIFIED
     finally:
         if container is not None:
             try:

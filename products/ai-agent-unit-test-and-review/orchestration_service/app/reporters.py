@@ -1,6 +1,8 @@
 from pathlib import Path
 from jinja2 import Template
 from datetime import datetime
+import xml.etree.ElementTree as ET # NEW: For parsing coverage XML
+from typing import Dict # NEW: For type hinting
 
 HTML_TEMPLATE = Template(
     """
@@ -52,3 +54,48 @@ def write_review_report(artifacts_dir: Path, review_body: str, file_name: str) -
     out_md = artifacts_dir / file_name
     out_md.write_text(review_body, encoding='utf-8')
     return str(out_md)
+
+# NEW FUNCTION: Tool to parse coverage data for the LLM review
+def parse_python_coverage_xml(xml_content: bytes) -> Dict:
+    """Parses a Python coverage.xml file and returns a summary dict."""
+    try:
+        root = ET.fromstring(xml_content.decode('utf-8'))
+        
+        totals = root.find('packages/package/metrics') # Adjusted path for common coverage XML output
+        if totals is None:
+            totals = root.find('project/metrics') # Fallback path
+            if totals is None:
+                 return {"overall_coverage": "N/A", "covered_lines": 0, "missed_lines": 0, "error": "No coverage metrics found."}
+            
+        covered = int(totals.get('covered_statements', '0'))
+        missed = int(totals.get('missed_statements', '0'))
+        lines = covered + missed
+        coverage_percent = (covered / lines) * 100 if lines > 0 else 0
+        
+        # Extract file-level details for added context (up to 5 files)
+        file_details = []
+        # Adjusted path for common coverage XML output
+        for file in root.findall('.//file')[:5]:
+            file_lines = int(file.get('statements', '0'))
+            file_missed = int(file.get('missing-statements', '0'))
+            file_coverage = (file_lines - file_missed) / file_lines * 100 if file_lines > 0 else 0
+
+            file_details.append({
+                "name": file.get('name'),
+                "coverage": f"{file_coverage:.2f}%",
+                "lines": file_lines,
+                "missed": file_missed
+            })
+
+        return {
+            "overall_coverage": f"{coverage_percent:.2f}%",
+            "covered_lines": covered,
+            "missed_lines": missed,
+            "total_lines": lines,
+            "file_details": file_details,
+            "error": None
+        }
+    except ET.ParseError:
+        return {"overall_coverage": "N/A", "error": "Failed to parse coverage XML."}
+    except Exception as e:
+        return {"overall_coverage": "N/A", "error": f"Unexpected error during coverage parsing: {e}"}
