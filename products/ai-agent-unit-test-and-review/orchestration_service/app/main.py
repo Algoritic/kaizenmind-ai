@@ -2,14 +2,13 @@ import os
 import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse # NEW IMPORT
-from app.schemas import AnalyzeRequest, AnalyzeResponse, StatusResponse, CodeReviewRequest, RepoRequest, CompareRequest
-from app.agent import Orchestrator
+from app.schemas import AnalyzeRequest, AnalyzeResponse, StatusResponse, CodeReviewRequest, RepoRequest, CompareRequest, LlmConfig
+from app.agent import Orchestrator, ReviewServiceClient # IMPORTS for Review Service Client and utilities
 from threading import Thread
 from typing import Dict, List
 # Import the posting function from the modular client
 from app.github_mcp import mcp_client, post_pr_review_comment
-# NEW IMPORTS for Review Service Client
-from app.agent import ReviewServiceClient # Import the client from agent.py
+
 # NEW IMPORTS from utilities and reporters
 from app.utils import new_task_dir, ARTIFACTS
 from app.reporters import write_review_report
@@ -21,14 +20,20 @@ app = FastAPI(title="AI Agent Test Orchestrator")
 
 TASKS: Dict[str, Dict] = {}
 
-# Initialize Review Service Client
-review_service_client = ReviewServiceClient(base_url="http://review_service:8000")
+
 
 def _run_task(tid: str, req: AnalyzeRequest):
     logger.info(f"Task {tid}: Starting analysis for source: {req.repo_url or req.upload_dir}")
     try:
         src = req.repo_url or req.upload_dir
-        orch = Orchestrator(src, req.languages, req.branch)
+        orch = Orchestrator(
+            src,
+            req.languages,
+            req.branch,
+            llm_config=req.llm_config,
+            review_service_base_url=req.review_service_base_url,
+            pentest_service_base_url=req.pentest_service_base_url
+        )
         TASKS[tid]["status"] = "running"
         logger.info(f"Task {tid}: Orchestrator initialized, running all steps.")
         report_path = orch.run_all()
@@ -45,6 +50,12 @@ def _run_code_review_task(tid: str, req: CodeReviewRequest):
     try:
         TASKS[tid]["status"] = "running"
         
+        # Initialize ReviewServiceClient with request-specific LLM config and base URL
+        review_service_client = ReviewServiceClient(
+            base_url=req.review_service_base_url,
+            llm_config=req.llm_config
+        )
+        
         # 1. Fetch Diff
         diff = mcp_client.get_pr_diff(req.pr_url)
         logger.info(f"Task {tid}: Got PR diff. Length: {len(diff)}")
@@ -53,10 +64,19 @@ def _run_code_review_task(tid: str, req: CodeReviewRequest):
         review_body = review_service_client.perform_code_review(diff, req.prompt)
         logger.info(f"Task {tid}: Generated review body.")
 
-        # 3. Post Review to PR
-        # This function uses the configured GITHUB_API_BASE_URL (MCP or GitHub)
-        post_result = post_pr_review_comment(req.pr_url, review_body.get("review", "")) # Assuming review_body is a dict with a 'review' key
+        # 3. Generate Documentation Review using dedicated LLM agent
+        doc_review_result = review_service_client.perform_doc_review(diff, req.prompt)
+        doc_review = doc_review_result.get("review", "Documentation Review Failed.")
+        logger.info(f"Task {tid}: Generated documentation review.")
+
+        # 4. Combine reviews for posting
+        combined_review_body = f"{review_body}\n\n---\n\n## 📝 Documentation Review\n{doc_review}"
+        logger.info(f"Task {tid}: Generated combined review body.")
+
+        # 5. Post Review to PR
+        post_result = post_pr_review_comment(req.pr_url, combined_review_body)
         report_path = f"Review posted to PR: {post_result.get('html_url', req.pr_url)}"
+        logger.info(f"Task {tid}: Posted review to PR.")
 
         TASKS[tid]["status"] = "done"
         TASKS[tid]["report_path"] = report_path
@@ -74,21 +94,35 @@ def _run_compare_task(tid: str, req: CompareRequest):
     logger.info(f"Task {tid}: Starting compare task for repo: {req.repo_url}, base: {req.base}, head: {req.head}")
     try:
         TASKS[tid]["status"] = "running"
+
+        # Initialize ReviewServiceClient with request-specific LLM config and base URL
+        review_service_client = ReviewServiceClient(
+            base_url=req.review_service_base_url,
+            llm_config=req.llm_config
+        )
         
         # 1. Fetch Diff
         diff = mcp_client.get_branch_diff(req.repo_url, req.base, req.head)
         logger.info(f"Task {tid}: Got branch diff. Length: {len(diff)}")
         
-        # 2. Generate Review using Review Service (reusing the critical review prompt)
-        review_body = review_service_client.perform_code_review(diff, req.prompt)
-        logger.info(f"Task {tid}: Generated review body.")
+        # 2. Generate Critical Review
+        review_body_result = review_service_client.perform_code_review(diff, req.prompt)
+        review_body = review_body_result.get("review", "Critical Review Failed.")
         
-        # 3. Create Artifacts Directory 
-        temp_dir = new_task_dir(tid) # Use the tid to create the task-specific directory
+        # NEW: 3. Generate Documentation Review using dedicated LLM agent
+        doc_review_result = review_service_client.perform_doc_review(diff, req.prompt)
+        doc_review = doc_review_result.get("review", "Documentation Review Failed.")
         
-        # 4. Write Markdown Report
+        # 4. Combine reviews for local report
+        combined_review_body = f"{review_body}\n\n---\n\n## 📝 Documentation Review\n{doc_review}"
+        logger.info(f"Task {tid}: Generated combined review body.")
+        
+        # 5. Create Artifacts Directory 
+        temp_dir = new_task_dir(tid) 
+        
+        # 6. Write Markdown Report
         report_filename = f"review_compare_{req.base}_to_{req.head}.md"
-        report_path = write_review_report(temp_dir, review_body.get("review", ""), report_filename) # Assuming review_body is a dict with a 'review' key
+        report_path = write_review_report(temp_dir, combined_review_body, report_filename) # MODIFIED: write combined body
         
         TASKS[tid]["status"] = "done"
         TASKS[tid]["report_path"] = report_path

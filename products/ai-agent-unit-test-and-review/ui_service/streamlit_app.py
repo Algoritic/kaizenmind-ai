@@ -1,11 +1,28 @@
 import os, time, httpx, streamlit as st
 from pathlib import Path
-API = os.getenv("API_BASE_URL", "http://0.0.0.0:8000")
 
 st.set_page_config(page_title="AI Agent Test Orchestrator", layout="wide")
 st.title("🧪 AI Agent: Code Understanding & Test Runner")
 
-tab1, tab2 = st.tabs(["Analyze & Test", "Code Review & Compare"])
+# Initialize session state for settings if not already present
+if 'settings' not in st.session_state:
+    st.session_state.settings = {
+        "API_BASE_URL": os.getenv("API_BASE_URL", "http://0.0.0.0:8000"),
+        "REVIEW_SERVICE_BASE_URL": os.getenv("REVIEW_SERVICE_BASE_URL", "http://review_service:8000"),
+        "PENTEST_SERVICE_BASE_URL": os.getenv("PENTEST_SERVICE_BASE_URL", "http://pentest_service:8000"),
+        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", ""),
+        "OPENAI_MODEL": os.getenv("OPENAI_MODEL", "gpt-4o"),
+        "LLM_TEMPERATURE": float(os.getenv("LLM_TEMPERATURE", 0.2)),
+        "LLM_MAX_TOKENS_REVIEW": int(os.getenv("LLM_MAX_TOKENS_REVIEW", 4000)),
+        "LLM_MAX_TOKENS_TESTGEN": int(os.getenv("LLM_MAX_TOKENS_TESTGEN", 1200)),
+        "LLM_MAX_TOKENS_DOC_REVIEW": int(os.getenv("LLM_MAX_TOKENS_DOC_REVIEW", 2000)),
+        "LLM_PROVIDER": os.getenv("LLM_PROVIDER", "openai"), # Default to openai
+        "AZURE_OPENAI_API_KEY": os.getenv("AZURE_OPENAI_API_KEY", ""),
+        "AZURE_OPENAI_ENDPOINT": os.getenv("AZURE_OPENAI_ENDPOINT", ""),
+        "AZURE_OPENAI_DEPLOYMENT_NAME": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", ""),
+    }
+
+tab1, tab2, tab3 = st.tabs(["Analyze & Test", "Code Review & Compare", "Settings"])
 
 with tab1:
     repo_url = st.text_input("Git repo URL (public or with access) OR leave blank to use mounted path:")
@@ -18,7 +35,34 @@ with tab1:
             st.error("Provide a repo_url or upload_dir")
         else:
             with st.spinner("Starting task..."):
-                r = httpx.post(f"{API}/analyze", json={"repo_url": repo_url or None, "upload_dir": upload_dir or None, "branch": branch or None, "languages": languages})
+                # Prepare LLM config to send to the backend
+                llm_config = {
+                    "llm_provider": st.session_state.settings["LLM_PROVIDER"],
+                    "llm_temperature": st.session_state.settings["LLM_TEMPERATURE"],
+                    "llm_max_tokens_review": st.session_state.settings["LLM_MAX_TOKENS_REVIEW"],
+                    "llm_max_tokens_testgen": st.session_state.settings["LLM_MAX_TOKENS_TESTGEN"],
+                    "llm_max_tokens_doc_review": st.session_state.settings["LLM_MAX_TOKENS_DOC_REVIEW"],
+                }
+                if st.session_state.settings["LLM_PROVIDER"] == "openai":
+                    llm_config["openai_api_key"] = st.session_state.settings["OPENAI_API_KEY"]
+                    llm_config["openai_model"] = st.session_state.settings["OPENAI_MODEL"]
+                elif st.session_state.settings["LLM_PROVIDER"] == "azure":
+                    llm_config["azure_openai_api_key"] = st.session_state.settings["AZURE_OPENAI_API_KEY"]
+                    llm_config["azure_openai_endpoint"] = st.session_state.settings["AZURE_OPENAI_ENDPOINT"]
+                    llm_config["azure_openai_deployment_name"] = st.session_state.settings["AZURE_OPENAI_DEPLOYMENT_NAME"]
+
+                r = httpx.post(
+                    f"{st.session_state.settings['API_BASE_URL']}/analyze",
+                    json={
+                        "repo_url": repo_url or None,
+                        "upload_dir": upload_dir or None,
+                        "branch": branch or None,
+                        "languages": languages,
+                        "llm_config": llm_config, # Pass LLM config
+                        "review_service_base_url": st.session_state.settings["REVIEW_SERVICE_BASE_URL"], # Pass service URLs
+                        "pentest_service_base_url": st.session_state.settings["PENTEST_SERVICE_BASE_URL"],
+                    }
+                )
                 r.raise_for_status()
                 tid = r.json()["task_id"]
                 st.session_state["tid"] = tid
@@ -30,15 +74,33 @@ with tab2:
         pr_url = st.text_input("GitHub PR URL")
         prompt = st.text_area("Custom Prompt (optional)", placeholder="e.g., Focus on security vulnerabilities and performance issues.")
 
-        if st.button("Start Code Review", type="primary"):
-            if not pr_url:
-                st.error("Provide a GitHub PR URL")
-            else:
-                with st.spinner("Starting task..."):
-                    r = httpx.post(f"{API}/code-review", json={"pr_url": pr_url, "prompt": prompt})
-                    r.raise_for_status()
-                    tid = r.json()["task_id"]
-                    st.session_state["tid"] = tid
+        llm_config = {
+            "llm_provider": st.session_state.settings["LLM_PROVIDER"],
+            "llm_temperature": st.session_state.settings["LLM_TEMPERATURE"],
+            "llm_max_tokens_review": st.session_state.settings["LLM_MAX_TOKENS_REVIEW"],
+            "llm_max_tokens_testgen": st.session_state.settings["LLM_MAX_TOKENS_TESTGEN"],
+            "llm_max_tokens_doc_review": st.session_state.settings["LLM_MAX_TOKENS_DOC_REVIEW"],
+        }
+        if st.session_state.settings["LLM_PROVIDER"] == "openai":
+            llm_config["openai_api_key"] = st.session_state.settings["OPENAI_API_KEY"]
+            llm_config["openai_model"] = st.session_state.settings["OPENAI_MODEL"]
+        elif st.session_state.settings["LLM_PROVIDER"] == "azure":
+            llm_config["azure_openai_api_key"] = st.session_state.settings["AZURE_OPENAI_API_KEY"]
+            llm_config["azure_openai_endpoint"] = st.session_state.settings["AZURE_OPENAI_ENDPOINT"]
+            llm_config["azure_openai_deployment_name"] = st.session_state.settings["AZURE_OPENAI_DEPLOYMENT_NAME"]
+        r = httpx.post(
+            f"{st.session_state.settings['API_BASE_URL']}/code-review",
+            json={
+                "pr_url": pr_url,
+                "prompt": prompt,
+                "llm_config": llm_config,
+                "review_service_base_url": st.session_state.settings["REVIEW_SERVICE_BASE_URL"],
+                "pentest_service_base_url": st.session_state.settings["PENTEST_SERVICE_BASE_URL"],
+            }
+        )
+        r.raise_for_status()
+        tid = r.json()["task_id"]
+        st.session_state["tid"] = tid
     
     elif review_type == "Branch Comparison":
         repo_url_compare = st.text_input("Git repo URL")
@@ -54,7 +116,7 @@ with tab2:
             else:
                 with st.spinner("Fetching branches..."):
                     try:
-                        r = httpx.post(f"{API}/repository/branches", json={"repo_url": repo_url_compare})
+                        r = httpx.post(f"{st.session_state.settings['API_BASE_URL']}/repository/branches", json={"repo_url": repo_url_compare})
                         r.raise_for_status()
                         st.session_state['branches'] = r.json()
                     except httpx.HTTPStatusError as e:
@@ -71,15 +133,115 @@ with tab2:
                 st.error("Provide a repo URL, base branch, and head branch")
             else:
                 with st.spinner("Starting task..."):
-                    r = httpx.post(f"{API}/repository/compare", json={
-                        "repo_url": repo_url_compare, 
-                        "base": base_branch, 
-                        "head": head_branch, 
-                        "prompt": prompt_compare
-                    })
+                    llm_config = {
+                        "openai_api_key": st.session_state.settings["OPENAI_API_KEY"],
+                        "openai_model": st.session_state.settings["OPENAI_MODEL"],
+                        "llm_temperature": st.session_state.settings["LLM_TEMPERATURE"],
+                        "llm_max_tokens_review": st.session_state.settings["LLM_MAX_TOKENS_REVIEW"],
+                        "llm_max_tokens_testgen": st.session_state.settings["LLM_MAX_TOKENS_TESTGEN"],
+                        "llm_max_tokens_doc_review": st.session_state.settings["LLM_MAX_TOKENS_DOC_REVIEW"],
+                    }
+                    r = httpx.post(
+                        f"{st.session_state.settings['API_BASE_URL']}/repository/compare",
+                        json={
+                            "repo_url": repo_url_compare, 
+                            "base": base_branch, 
+                            "head": head_branch, 
+                            "prompt": prompt_compare,
+                            "llm_config": llm_config,
+                            "review_service_base_url": st.session_state.settings["REVIEW_SERVICE_BASE_URL"],
+                            "pentest_service_base_url": st.session_state.settings["PENTEST_SERVICE_BASE_URL"],
+                        }
+                    )
                     r.raise_for_status()
                     tid = r.json()["task_id"]
                     st.session_state["tid"] = tid
+
+with tab3:
+    st.header("Service Endpoints")
+    st.session_state.settings["API_BASE_URL"] = st.text_input(
+        "Orchestration Service Base URL",
+        st.session_state.settings["API_BASE_URL"],
+        key="api_base_url_input"
+    )
+    st.session_state.settings["REVIEW_SERVICE_BASE_URL"] = st.text_input(
+        "Review Service Base URL",
+        st.session_state.settings["REVIEW_SERVICE_BASE_URL"],
+        key="review_service_base_url_input"
+    )
+    st.session_state.settings["PENTEST_SERVICE_BASE_URL"] = st.text_input(
+        "Pentest Service Base URL",
+        st.session_state.settings["PENTEST_SERVICE_BASE_URL"],
+        key="pentest_service_base_url_input"
+    )
+
+    st.header("LLM Configuration")
+    st.session_state.settings["LLM_PROVIDER"] = st.radio(
+        "LLM Provider",
+        ("openai", "azure"),
+        index=0 if st.session_state.settings["LLM_PROVIDER"] == "openai" else 1,
+        key="llm_provider_input"
+    )
+
+    if st.session_state.settings["LLM_PROVIDER"] == "openai":
+        st.session_state.settings["OPENAI_API_KEY"] = st.text_input(
+            "OpenAI API Key",
+            st.session_state.settings["OPENAI_API_KEY"],
+            type="password",
+            key="openai_api_key_input"
+        )
+        st.session_state.settings["OPENAI_MODEL"] = st.text_input(
+            "OpenAI Model",
+            st.session_state.settings["OPENAI_MODEL"],
+            key="openai_model_input"
+        )
+    elif st.session_state.settings["LLM_PROVIDER"] == "azure":
+        st.session_state.settings["AZURE_OPENAI_API_KEY"] = st.text_input(
+            "Azure OpenAI API Key",
+            st.session_state.settings["AZURE_OPENAI_API_KEY"],
+            type="password",
+            key="azure_openai_api_key_input"
+        )
+        st.session_state.settings["AZURE_OPENAI_ENDPOINT"] = st.text_input(
+            "Azure OpenAI Endpoint",
+            st.session_state.settings["AZURE_OPENAI_ENDPOINT"],
+            key="azure_openai_endpoint_input"
+        )
+        st.session_state.settings["AZURE_OPENAI_DEPLOYMENT_NAME"] = st.text_input(
+            "Azure OpenAI Deployment Name",
+            st.session_state.settings["AZURE_OPENAI_DEPLOYMENT_NAME"],
+            key="azure_openai_deployment_name_input"
+        )
+
+    st.session_state.settings["LLM_TEMPERATURE"] = st.number_input(
+        "LLM Temperature",
+        min_value=0.0,
+        max_value=1.0,
+        value=st.session_state.settings["LLM_TEMPERATURE"],
+        step=0.01,
+        key="llm_temperature_input"
+    )
+    st.session_state.settings["LLM_MAX_TOKENS_REVIEW"] = st.number_input(
+        "LLM Max Tokens (Code Review)",
+        min_value=500,
+        value=st.session_state.settings["LLM_MAX_TOKENS_REVIEW"],
+        step=100,
+        key="llm_max_tokens_review_input"
+    )
+    st.session_state.settings["LLM_MAX_TOKENS_TESTGEN"] = st.number_input(
+        "LLM Max Tokens (Test Generation)",
+        min_value=100,
+        value=st.session_state.settings["LLM_MAX_TOKENS_TESTGEN"],
+        step=50,
+        key="llm_max_tokens_testgen_input"
+    )
+    st.session_state.settings["LLM_MAX_TOKENS_DOC_REVIEW"] = st.number_input(
+        "LLM Max Tokens (Doc Review)",
+        min_value=100,
+        value=st.session_state.settings["LLM_MAX_TOKENS_DOC_REVIEW"],
+        step=50,
+        key="llm_max_tokens_doc_review_input"
+    )
 
 def display_download_buttons(tid, report_path_full, api_base_url):
     """Handles fetching and displaying download buttons for various report types."""
@@ -127,7 +289,7 @@ if tid := st.session_state.get("tid"):
     st.info(f"Task ID: {tid}")
     ph = st.empty()
     while True:
-        s = httpx.get(f"{API}/status/{tid}").json()
+        s = httpx.get(f"{st.session_state.settings['API_BASE_URL']}/status/{tid}").json()
         if s["status"] in ("queued","running"):
             ph.write(f"Status: **{s['status']}** ...")
             time.sleep(2)
@@ -141,9 +303,11 @@ if tid := st.session_state.get("tid"):
                  st.markdown(f"**Result:** {report_path_full}")
             else:
                 # REPLACED OLD LOGIC: Use the new helper function for download buttons
-                display_download_buttons(tid, report_path_full, API)
+                display_download_buttons(tid, report_path_full, st.session_state.settings["API_BASE_URL"])
             
             st.stop()
         else:
             ph.error(f"Error: {s.get('error')}")
             st.stop()
+
+ 

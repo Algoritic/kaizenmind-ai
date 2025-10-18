@@ -1,13 +1,14 @@
 import subprocess, shutil
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
+from schemas import LlmConfig # Import LlmConfig
 
 TOOLS = {
     "node": ["npx", "-y", "eslint", ".", "--format", "json"],
     # Add other code quality tools here for different languages
 }
 
-def run_static_review(lang: str, cwd: Path) -> Dict:
+def run_static_review(lang: str, cwd: Path, llm_config: Optional[LlmConfig] = None) -> Dict:
     cmd = TOOLS.get(lang)
     if not cmd or shutil.which(cmd[0]) is None:
         return {"tool": None, "results": []}

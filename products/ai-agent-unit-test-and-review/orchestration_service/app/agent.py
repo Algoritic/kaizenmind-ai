@@ -1,61 +1,52 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple, Optional
 from app.utils import new_task_dir, clone_or_copy, write_file
 from app.ingestion import summarize_repo
 from app.runner_manager import run_in_container
-from app.reporters import write_report
+from app.reporters import write_report, parse_python_coverage_xml
 import logging
 import requests # For making HTTP requests to other services
+from app.schemas import LlmConfig # Import LlmConfig
 
 logger = logging.getLogger(__name__)
 
-# Placeholder client for Review Service
 class ReviewServiceClient:
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, llm_config: Optional[LlmConfig]):
         self.base_url = base_url
+        self.llm_config = llm_config
 
-    def perform_code_review(self, diff: str, prompt_override: str = None) -> Dict:
-        payload = {"diff": diff}
-        if prompt_override:
-            payload["prompt_override"] = prompt_override
-        response = requests.post(f"{self.base_url}/code_review", json=payload)
-        response.raise_for_status()
-        return response.json()
+    def _prepare_payload(self, original_payload: Dict) -> Dict:
+        if self.llm_config:
+            original_payload["llm_config"] = self.llm_config.dict()
+        return original_payload
 
-    def plan_test_targets(self, repo_meta: Dict, languages: List[str]) -> Dict[str, List[str]]:
-        response = requests.post(f"{self.base_url}/plan_test_targets", json={'repo_meta': repo_meta, 'languages': languages})
-        response.raise_for_status()
-        return response.json()
-
-    def generate_tests(self, lang: str, relpath: str, repo_root: str) -> Dict[str, str]:
-        response = requests.post(f"{self.base_url}/generate_tests", json={'lang': lang, 'relpath': relpath, 'repo_root': repo_root})
-        response.raise_for_for_status()
-        return response.json()
-
-    def static_review(self, lang: str, cwd: str) -> Dict:
-        response = requests.post(f"{self.base_url}/static_review", json={'lang': lang, 'cwd': cwd})
-        response.raise_for_status()
-        return response.json()
-
-# Placeholder client for Pentest Service
 class PentestServiceClient:
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, llm_config: Optional[LlmConfig]):
         self.base_url = base_url
+        self.llm_config = llm_config # Pentest service might not use LLM config directly, but pass it for consistency
 
-    def static_pentest(self, lang: str, cwd: str) -> Dict:
-        response = requests.post(f"{self.base_url}/static_pentest", json={'lang': lang, 'cwd': cwd})
-        response.raise_for_status()
-        return response.json()
+    def _prepare_payload(self, original_payload: Dict) -> Dict:
+        if self.llm_config:
+            original_payload["llm_config"] = self.llm_config.dict()
+        return original_payload
 
 class Orchestrator:
-    def __init__(self, repo_src: str, languages: List[str], branch: str = None):
+    def __init__(
+        self, 
+        repo_src: str, 
+        languages: List[str], 
+        branch: str = None, 
+        llm_config: Optional[LlmConfig] = None,
+        review_service_base_url: str = "http://review_service:8000",
+        pentest_service_base_url: str = "http://pentest_service:8000"
+    ):
         self.repo_src = repo_src
         self.languages = languages
         self.branch = branch
         self.artifacts = new_task_dir()
         self.repo_dir = self.artifacts / "repo"
-        self.review_service = ReviewServiceClient(base_url="http://review_service:8000") # Assuming review service runs on port 8000
-        self.pentest_service = PentestServiceClient(base_url="http://pentest_service:8000") # Assuming pentest service runs on port 8000
+        self.review_service = ReviewServiceClient(base_url=review_service_base_url, llm_config=llm_config)
+        self.pentest_service = PentestServiceClient(base_url=pentest_service_base_url, llm_config=llm_config)
         logger.info(f"Orchestrator initialized for repo: {repo_src}, languages: {languages}, branch: {branch}")
 
     def prepare(self):
@@ -105,15 +96,24 @@ class Orchestrator:
             logger.info(f"Static analysis for {lang} completed.")
         return results
 
-    def run_tests(self) -> Dict[str, Dict]:
-        logger.info("Running generated tests.")
+    def run_tests(self) -> Tuple[Dict, Dict]:
+        logger.info("Running generated tests and collecting artifacts.")
         outputs = {}
+        coverage_data = {} # NEW: To store parsed coverage summary
         for lang in self.languages:
             logger.info(f"Running tests for language: {lang}")
-            code, out = run_in_container(lang, self.repo_dir)
+            # MODIFIED: run_in_container now returns container_files
+            code, out, files = run_in_container(lang, self.repo_dir) 
             outputs[lang] = {"exit_code": code, "output": out}
             logger.info(f"Tests for {lang} completed with exit code {code}.")
-        return outputs
+            
+            # NEW: Process Python coverage data
+            if lang == "python" and "coverage.xml" in files:
+                logger.info("Python coverage.xml artifact found. Parsing...")
+                coverage_data["python"] = parse_python_coverage_xml(files["coverage.xml"])
+                logger.info(f"Python overall coverage: {coverage_data['python'].get('overall_coverage', 'N/A')}")
+
+        return outputs, coverage_data
 
     def report(self, blocks: List[Dict]):
         return write_report(self.artifacts, self.languages, self.summary, blocks)
@@ -126,19 +126,37 @@ class Orchestrator:
         logger.info("Test generation complete.")
         static_res = self.static_checks()
         logger.info("Static checks complete.")
-        test_res = self.run_tests()
-        logger.info("Test runs complete.")
+        test_res, cov_res = self.run_tests() # MODIFIED: Capture coverage data
+        logger.info("Test runs and artifact collection complete.")
         blocks = [
             {"title": "Repo Summary", "meta": str(self.summary), "output": None},
             {"title": "Generated Tests", "meta": str(gen), "output": None},
         ]
+        
+        # Add Static Review and Pentest results
         for lang, s_res in static_res.items():
             if "review" in s_res:
                 blocks.append({"title": f"Static Review ({lang})", "meta": None, "output": str(s_res["review"])})
             if "pentest" in s_res:
                 blocks.append({"title": f"Static Pentest ({lang})", "meta": None, "output": str(s_res["pentest"])})
+        
+        # Add Test Run and Coverage Summary Blocks (NEW)
         for lang, r in test_res.items():
             blocks.append({"title": f"Test Run ({lang})", "meta": f"exit={r['exit_code']}", "output": r["output"]})
+        
+        if cov_res:
+            for lang, data in cov_res.items():
+                # Format coverage data for human review
+                details = "\n".join([f"- {d['name']}: {d['coverage']} ({d['missed']} missed)" for d in data.get('file_details', [])])
+                cov_output = (
+                    f"Overall Coverage: {data.get('overall_coverage', 'N/A')}\n"
+                    f"Total Lines: {data.get('total_lines', 0)}\n"
+                    f"Missed Lines: {data.get('missed_lines', 0)}\n\n"
+                    f"File-Level Summary (Top 5):\n{details}\n\n"
+                    f"Error: {data.get('error') or 'None'}"
+                )
+                blocks.append({"title": f"Coverage Analysis ({lang})", "meta": None, "output": cov_output})
+            
         report_path = self.report(blocks)
         logger.info(f"Full analysis run complete. Report generated at: {report_path}")
         return report_path
