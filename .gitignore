@@ -25,3 +25,12 @@ build/
 
 dev/
 frameworks/
+*artifacts*
+/*/*/*/artifacts/*
+
+# Common artifacts
+artifacts/
+target/
+node_modules/
+*.tmp
+*.swp
