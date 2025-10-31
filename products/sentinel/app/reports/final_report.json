@@ -1,0 +1,1013 @@
+{
+  "project": "/app/target/dexter",
+  "id": "run-sample",
+  "summary": {
+    "critical": 0,
+    "high": 10,
+    "medium": 20,
+    "low": 10
+  },
+  "sections": [
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Security Analyst",
+      "summary": "Static & binary analysis completed (stubs / real tools where available).",
+      "findings": [
+        {
+          "title": "Static scan stub",
+          "description": "Static scan placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Secret-scan heuristic",
+          "description": "Heuristic secret scan",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run git-secrets / truffleHog",
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Dep audit stub",
+          "description": "Dependency audit placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run safety / npm audit / Snyk",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "vulnerabilities": [
+        {
+          "count": 3
+        }
+      ]
+    },
+    {
+      "persona": "PenTester",
+      "summary": "Dynamic baseline pentest executed (stubs for missing tooling).",
+      "findings": [
+        {
+          "title": "API deep fuzzing",
+          "description": "API dynamic stub",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Use auth-aware API fuzzer",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "exploits": [],
+      "impact_summary": "See findings for impact."
+    },
+    {
+      "persona": "Test Engineer",
+      "summary": "Test tooling executed (or stubbed) and smoke tests generated.",
+      "findings": [
+        {
+          "title": "Tests executed",
+          "description": "pytest placeholder",
+          "severity": "low",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [
+        "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n"
+      ],
+      "meta": null,
+      "coverage": null,
+      "failed_tests": []
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: package.json",
+          "description": "",
+          "severity": "medium",
+          "file": "package.json",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: pyproject.toml",
+          "description": "",
+          "severity": "medium",
+          "file": "pyproject.toml",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "LLM Code Review",
+      "findings": [
+        {
+          "title": "LLM summary",
+          "description": "LLM not available.",
+          "severity": "low",
+          "file": "",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Security Analyst",
+      "summary": "Static & binary analysis completed (stubs / real tools where available).",
+      "findings": [
+        {
+          "title": "Static scan stub",
+          "description": "Static scan placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Secret-scan heuristic",
+          "description": "Heuristic secret scan",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run git-secrets / truffleHog",
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Dep audit stub",
+          "description": "Dependency audit placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run safety / npm audit / Snyk",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "vulnerabilities": [
+        {
+          "count": 3
+        }
+      ]
+    },
+    {
+      "persona": "PenTester",
+      "summary": "Dynamic baseline pentest executed (stubs for missing tooling).",
+      "findings": [
+        {
+          "title": "API deep fuzzing",
+          "description": "API dynamic stub",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Use auth-aware API fuzzer",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "exploits": [],
+      "impact_summary": "See findings for impact."
+    },
+    {
+      "persona": "Test Engineer",
+      "summary": "Test tooling executed (or stubbed) and smoke tests generated.",
+      "findings": [
+        {
+          "title": "Tests executed",
+          "description": "pytest placeholder",
+          "severity": "low",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [
+        "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n"
+      ],
+      "meta": null,
+      "coverage": null,
+      "failed_tests": []
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: package.json",
+          "description": "",
+          "severity": "medium",
+          "file": "package.json",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: pyproject.toml",
+          "description": "",
+          "severity": "medium",
+          "file": "pyproject.toml",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "LLM Code Review",
+      "findings": [
+        {
+          "title": "LLM summary",
+          "description": "LLM not available.",
+          "severity": "low",
+          "file": "",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Security Analyst",
+      "summary": "Static & binary analysis completed (stubs / real tools where available).",
+      "findings": [
+        {
+          "title": "Static scan stub",
+          "description": "Static scan placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Secret-scan heuristic",
+          "description": "Heuristic secret scan",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run git-secrets / truffleHog",
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Dep audit stub",
+          "description": "Dependency audit placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run safety / npm audit / Snyk",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "vulnerabilities": [
+        {
+          "count": 3
+        }
+      ]
+    },
+    {
+      "persona": "PenTester",
+      "summary": "Dynamic baseline pentest executed (stubs for missing tooling).",
+      "findings": [
+        {
+          "title": "API deep fuzzing",
+          "description": "API dynamic stub",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Use auth-aware API fuzzer",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "exploits": [],
+      "impact_summary": "See findings for impact."
+    },
+    {
+      "persona": "Test Engineer",
+      "summary": "Test tooling executed (or stubbed) and smoke tests generated.",
+      "findings": [
+        {
+          "title": "Tests executed",
+          "description": "pytest placeholder",
+          "severity": "low",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [
+        "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n"
+      ],
+      "meta": null,
+      "coverage": null,
+      "failed_tests": []
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: package.json",
+          "description": "",
+          "severity": "medium",
+          "file": "package.json",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: pyproject.toml",
+          "description": "",
+          "severity": "medium",
+          "file": "pyproject.toml",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "LLM Code Review",
+      "findings": [
+        {
+          "title": "LLM summary",
+          "description": "LLM not available.",
+          "severity": "low",
+          "file": "",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Security Analyst",
+      "summary": "Static & binary analysis completed (stubs / real tools where available).",
+      "findings": [
+        {
+          "title": "Static scan stub",
+          "description": "Static scan placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Secret-scan heuristic",
+          "description": "Heuristic secret scan",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run git-secrets / truffleHog",
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Dep audit stub",
+          "description": "Dependency audit placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run safety / npm audit / Snyk",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "vulnerabilities": [
+        {
+          "count": 3
+        }
+      ]
+    },
+    {
+      "persona": "PenTester",
+      "summary": "Dynamic baseline pentest executed (stubs for missing tooling).",
+      "findings": [
+        {
+          "title": "API deep fuzzing",
+          "description": "API dynamic stub",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Use auth-aware API fuzzer",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "exploits": [],
+      "impact_summary": "See findings for impact."
+    },
+    {
+      "persona": "Test Engineer",
+      "summary": "Test tooling executed (or stubbed) and smoke tests generated.",
+      "findings": [
+        {
+          "title": "Tests executed",
+          "description": "pytest placeholder",
+          "severity": "low",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [
+        "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n"
+      ],
+      "meta": null,
+      "coverage": null,
+      "failed_tests": []
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: package.json",
+          "description": "",
+          "severity": "medium",
+          "file": "package.json",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: pyproject.toml",
+          "description": "",
+          "severity": "medium",
+          "file": "pyproject.toml",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "LLM Code Review",
+      "findings": [
+        {
+          "title": "LLM summary",
+          "description": "LLM not available.",
+          "severity": "low",
+          "file": "",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "ok"
+      }
+    },
+    {
+      "persona": "Security Analyst",
+      "summary": "Static & binary analysis completed (stubs / real tools where available).",
+      "findings": [
+        {
+          "title": "Static scan stub",
+          "description": "Static scan placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Secret-scan heuristic",
+          "description": "Heuristic secret scan",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run git-secrets / truffleHog",
+          "evidence": null,
+          "tags": null
+        },
+        {
+          "title": "Dep audit stub",
+          "description": "Dependency audit placeholder",
+          "severity": "medium",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Run safety / npm audit / Snyk",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "vulnerabilities": [
+        {
+          "count": 3
+        }
+      ]
+    },
+    {
+      "persona": "PenTester",
+      "summary": "Dynamic baseline pentest executed (stubs for missing tooling).",
+      "findings": [
+        {
+          "title": "API deep fuzzing",
+          "description": "API dynamic stub",
+          "severity": "high",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": "Use auth-aware API fuzzer",
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "exploits": [],
+      "impact_summary": "See findings for impact."
+    },
+    {
+      "persona": "Test Engineer",
+      "summary": "Test tooling executed (or stubbed) and smoke tests generated.",
+      "findings": [
+        {
+          "title": "Tests executed",
+          "description": "pytest placeholder",
+          "severity": "low",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [
+        "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n"
+      ],
+      "meta": null,
+      "coverage": null,
+      "failed_tests": []
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: package.json",
+          "description": "",
+          "severity": "medium",
+          "file": "package.json",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "Static Checks",
+      "findings": [
+        {
+          "title": "Dependency file: pyproject.toml",
+          "description": "",
+          "severity": "medium",
+          "file": "pyproject.toml",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    },
+    {
+      "persona": "External Agent",
+      "summary": "LLM Code Review",
+      "findings": [
+        {
+          "title": "LLM summary",
+          "description": "LLM not available.",
+          "severity": "low",
+          "file": "",
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": "",
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null
+    }
+  ],
+  "artifacts": {
+    "tests": [
+      "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n",
+      "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n",
+      "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n",
+      "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n",
+      "# Auto-generated smoke test\n\ndef test_smoke():\n    assert True\n"
+    ],
+    "reports": [],
+    "logs": []
+  },
+  "metadata": {
+    "tasks": [
+      "static_analysis",
+      "test_generation",
+      "pentest_simulation"
+    ],
+    "execution_model": "hybrid-parallel",
+    "order": [
+      "code_review",
+      [
+        "test_engineer",
+        "security_analyst",
+        "pentester"
+      ],
+      "aggregate"
+    ]
+  },
+  "findings_ranked": [
+    {
+      "title": "Secret-scan heuristic",
+      "description": "Heuristic secret scan",
+      "severity": "high",
+      "file": null,
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": "Run git-secrets / truffleHog",
+      "evidence": null,
+      "tags": null
+    },
+    {
+      "title": "API deep fuzzing",
+      "description": "API dynamic stub",
+      "severity": "high",
+      "file": null,
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": "Use auth-aware API fuzzer",
+      "evidence": null,
+      "tags": null
+    },
+    {
+      "title": "Static scan stub",
+      "description": "Static scan placeholder",
+      "severity": "medium",
+      "file": null,
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": null,
+      "evidence": null,
+      "tags": null
+    },
+    {
+      "title": "Dep audit stub",
+      "description": "Dependency audit placeholder",
+      "severity": "medium",
+      "file": null,
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": "Run safety / npm audit / Snyk",
+      "evidence": null,
+      "tags": null
+    },
+    {
+      "title": "Dependency file: package.json",
+      "description": "",
+      "severity": "medium",
+      "file": "package.json",
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": null,
+      "evidence": "",
+      "tags": null
+    },
+    {
+      "title": "Dependency file: pyproject.toml",
+      "description": "",
+      "severity": "medium",
+      "file": "pyproject.toml",
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": null,
+      "evidence": "",
+      "tags": null
+    },
+    {
+      "title": "Tests executed",
+      "description": "pytest placeholder",
+      "severity": "low",
+      "file": null,
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": null,
+      "evidence": null,
+      "tags": null
+    },
+    {
+      "title": "LLM summary",
+      "description": "LLM not available.",
+      "severity": "low",
+      "file": "",
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": null,
+      "evidence": "",
+      "tags": null
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pentestai"
+version = "0.3.0"
+description = "Multi-persona AI agent for code review, testing, and security checks"
+authors = [{name = "You", email = "you@example.com"}]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+pentestai = "pentestai.main:cli"

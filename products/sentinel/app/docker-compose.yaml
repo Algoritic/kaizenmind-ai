@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    image: pentestai:local
+    container_name: pentestai_app
+    ports:
+      - "8501:8501"
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Optional, if you wire LLMs later:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./reports:/app/reports
+      # Put the repo to analyze in ./target on your host:
+      - ./target:/app/target:ro
+    command: streamlit run ui/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+
+  cli:
+    image: pentestai:local
+    container_name: pentestai_cli
+    depends_on:
+      - app
+    profiles: ["cli"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OLLAMA_URL=http://host.docker.internal:11434 
+      - OLLAMA_MODEL=gpt-oss:20b
+      - LLM_BACKEND=ollama
+      - USE_LANGGRAPH="1"
+      - PENTESTAI_LOG_LEVEL=INFO
+      - PENTESTAI_LOG_FILE=/app/logs/pentestai.log
+    volumes:
+      - ./logs:/app/logs
+      - ./target:/app/target:ro
+      - ./reports:/app/reports
+    command: python -m pentestai.cli --repo /app/target

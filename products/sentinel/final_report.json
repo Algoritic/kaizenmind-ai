@@ -1,0 +1,126 @@
+{
+  "project": "n/a",
+  "id": "run-sample",
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2
+  },
+  "sections": [
+    {
+      "persona": "Code Reviewer",
+      "summary": "Repository & basic APK review completed.",
+      "findings": [
+        {
+          "title": "No repo",
+          "description": "No repo provided for linting",
+          "severity": "low",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "metrics": {
+        "lint": "no-repo"
+      }
+    },
+    {
+      "persona": "Test Engineer",
+      "summary": "Test tooling executed (or stubbed) and smoke tests generated.",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "coverage": null,
+      "failed_tests": []
+    },
+    {
+      "persona": "Security Analyst",
+      "summary": "Static & binary analysis completed (stubs / real tools where available).",
+      "findings": [],
+      "artifacts": [],
+      "meta": null,
+      "vulnerabilities": [
+        {
+          "count": 0
+        }
+      ]
+    },
+    {
+      "persona": "PenTester",
+      "summary": "Dynamic baseline pentest executed (stubs for missing tooling).",
+      "findings": [
+        {
+          "title": "No target",
+          "description": "No repo or apk provided",
+          "severity": "low",
+          "file": null,
+          "line": null,
+          "cwe": null,
+          "cvss": null,
+          "recommendation": null,
+          "evidence": null,
+          "tags": null
+        }
+      ],
+      "artifacts": [],
+      "meta": null,
+      "exploits": [],
+      "impact_summary": "See findings for impact."
+    }
+  ],
+  "artifacts": {
+    "tests": [],
+    "reports": [],
+    "logs": []
+  },
+  "metadata": {
+    "tasks": [
+      "static_analysis",
+      "test_generation",
+      "pentest_simulation"
+    ],
+    "execution_model": "hybrid-parallel",
+    "order": [
+      "code_review",
+      [
+        "test_engineer",
+        "security_analyst",
+        "pentester"
+      ],
+      "aggregate"
+    ]
+  },
+  "findings_ranked": [
+    {
+      "title": "No repo",
+      "description": "No repo provided for linting",
+      "severity": "low",
+      "file": null,
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": null,
+      "evidence": null,
+      "tags": null
+    },
+    {
+      "title": "No target",
+      "description": "No repo or apk provided",
+      "severity": "low",
+      "file": null,
+      "line": null,
+      "cwe": null,
+      "cvss": null,
+      "recommendation": null,
+      "evidence": null,
+      "tags": null
+    }
+  ]
+}
