@@ -20,6 +20,36 @@ class ReviewServiceClient:
             original_payload["llm_config"] = self.llm_config.dict()
         return original_payload
 
+    def plan_test_targets(self, summary: str, languages: List[str]) -> Dict:
+        payload = self._prepare_payload({"summary": summary, "languages": languages})
+        response = requests.post(f"{self.base_url}/plan_test_targets", json=payload)
+        response.raise_for_status()
+        return response.json()
+
+    def generate_tests(self, lang: str, relpath: str, repo_dir: str) -> Dict:
+        payload = self._prepare_payload({"lang": lang, "relpath": relpath, "repo_dir": repo_dir})
+        response = requests.post(f"{self.base_url}/generate_tests", json=payload)
+        response.raise_for_status()
+        return response.json()
+
+    def static_review(self, lang: str, cwd: str) -> Dict:
+        payload = self._prepare_payload({"lang": lang, "cwd": cwd})
+        response = requests.post(f"{self.base_url}/static_review", json=payload)
+        response.raise_for_status()
+        return response.json()
+
+    def perform_code_review(self, diff: str, prompt: str) -> Dict:
+        payload = self._prepare_payload({"diff": diff, "prompt": prompt})
+        response = requests.post(f"{self.base_url}/code_review", json=payload)
+        response.raise_for_status()
+        return response.json()
+
+    def perform_doc_review(self, diff: str, prompt: str) -> Dict:
+        payload = self._prepare_payload({"diff": diff, "prompt": prompt})
+        response = requests.post(f"{self.base_url}/doc_review", json=payload)
+        response.raise_for_status()
+        return response.json()
+
 class PentestServiceClient:
     def __init__(self, base_url: str, llm_config: Optional[LlmConfig]):
         self.base_url = base_url
@@ -29,6 +59,18 @@ class PentestServiceClient:
         if self.llm_config:
             original_payload["llm_config"] = self.llm_config.dict()
         return original_payload
+
+    def static_pentest(self, lang: str, cwd: str) -> Dict:
+        payload = self._prepare_payload({"lang": lang, "cwd": cwd})
+        response = requests.post(f"{self.base_url}/static_pentest", json=payload)
+        response.raise_for_status()
+        return response.json()
+
+    def dynamic_pentest(self, tool: str, args: List[str]) -> Dict:
+        payload = {"tool": tool, "args": args}
+        response = requests.post(f"{self.base_url}/dynamic_pentest", json=payload)
+        response.raise_for_status()
+        return response.json()
 
 class Orchestrator:
     def __init__(

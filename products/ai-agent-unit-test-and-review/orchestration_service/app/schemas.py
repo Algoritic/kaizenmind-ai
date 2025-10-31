@@ -13,6 +13,10 @@ class LlmConfig(BaseModel):
     azure_openai_endpoint: Optional[str] = None
     azure_openai_deployment_name: Optional[str] = None
 
+class DynamicPentestRequest(BaseModel):
+    tool: str
+    args: List[str]
+
 class AnalyzeRequest(BaseModel):
     repo_url: Optional[str] = None
     upload_dir: Optional[str] = None  # Mounted path inside API container
@@ -22,6 +26,7 @@ class AnalyzeRequest(BaseModel):
     llm_config: Optional[LlmConfig] = None
     review_service_base_url: Optional[str] = None
     pentest_service_base_url: Optional[str] = None
+    dynamic_pentest_requests: Optional[List[DynamicPentestRequest]] = None
 
 class AnalyzeResponse(BaseModel):
     task_id: str

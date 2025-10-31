@@ -1,0 +1,9 @@
+
+services:
+  secops-mcp:
+    build:
+      context: ../../frameworks/secops-mcp
+    image: secops-mcp:latest
+    container_name: secops-mcp
+    restart: unless-stopped
+    command: ["python", "main.py"]

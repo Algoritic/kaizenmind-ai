@@ -12,3 +12,5 @@ PyYAML
 requests
 pytest
 openai
+langgraph
+langchain_openai
