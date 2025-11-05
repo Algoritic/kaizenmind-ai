@@ -1,4 +1,17 @@
 services:
+  secops-mcp:
+    # assuming you cloned https://github.com/securityfortech/secops-mcp into ./secops-mcp
+    build: ./secops-mcp
+    container_name: secops-mcp
+    # the readme says "docker run -it --rm secops-mcp", so we expose a port and bind 0.0.0.0
+    command: ["python", "main.py", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      # optional: persist wordlists, results, etc.
+      - ./secops-mcp/data:/app/data
+    networks:
+      - mcp-net
   app:
     build: .
     image: pentestai:local
@@ -13,6 +26,8 @@ services:
       - ./reports:/app/reports
       # Put the repo to analyze in ./target on your host:
       - ./target:/app/target:ro
+    networks:
+      - mcp-net
     command: streamlit run ui/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
 
   cli:
@@ -33,4 +48,10 @@ services:
       - ./logs:/app/logs
       - ./target:/app/target:ro
       - ./reports:/app/reports
+    networks:
+      - mcp-net
     command: python -m pentestai.cli --repo /app/target
+
+networks:
+  mcp-net:
+    driver: bridge
