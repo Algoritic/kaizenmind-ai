@@ -1,0 +1,49 @@
+openapi: 3.0.0
+info:
+  title: Vulnerable Target API
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+paths:
+  /users/{user_id}/data:
+    get:
+      summary: Get User Data (BOLA Vulnerable)
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /users:
+    post:
+      summary: Create User (Mass Assignment Vulnerable)
+      responses:
+        '201':
+          description: Created
+  /admin/system_reset:
+    delete:
+      summary: Reset System (BFLA Vulnerable)
+      responses:
+        '200':
+          description: Admin action successful
+  /fetch_avatar:
+    get:
+      summary: Fetch Avatar (SSRF Vulnerable)
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fetched
+  /public/info:
+    get:
+      summary: Public Info (Rate Limit Vulnerable)
+      responses:
+        '200':
+          description: OK

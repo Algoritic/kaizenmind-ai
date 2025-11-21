@@ -1,0 +1,9 @@
+
+flask
+requests
+pyyaml
+langchain
+langchain-openai
+langchain-mcp-adapters
+langgraph
+mcp
