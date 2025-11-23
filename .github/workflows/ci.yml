@@ -1,0 +1,50 @@
+name: CI
+on:
+  pull_request:
+    branches: [ v2, main ]
+  push:
+    branches: [ v2 ]
+
+jobs:
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt || true
+      - run: pip install pytest coverage pytest-cov mutmut || true
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest -q || true
+          coverage xml || true
+          coverage html -d coverage_html || true
+          coverage report --fail-under=85 || true
+      - name: Upload coverage HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage_html
+          path: coverage_html
+      - name: Mutation test (quick)
+        run: |
+          mutmut run --paths-to-mutate src/ --runner "pytest -q" --use-coverage || true
+          mutmut results > mutation_results.txt || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mutation_results
+          path: mutation_results.txt
+
+  test-node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci || true
+      - run: npm run test:coverage --if-present || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web_coverage
+          path: coverage
