@@ -1,0 +1,40 @@
+# Use the official Kali Linux rolling image (most up-to-date)
+FROM kalilinux/kali-rolling
+
+# Set metadata
+LABEL maintainer="kali-docker-user"
+LABEL version="2025.1"
+LABEL description="Kali Linux Docker image with all available tools installed."
+
+# Set environment variables to prevent interactive prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1. Update the package list
+# 2. Install the 'kali-linux-everything' metapackage
+#    NOTE: This installs 600+ tools and will result in a very large image (20GB+).
+#    If the build fails or is too large, switch to 'kali-linux-large' or 'kali-linux-headless'.
+# 3. Clean up apt cache to save space (though minimal compared to the tools)
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends \
+    kali-linux-everything \
+    pciutils \
+    net-tools \
+    iputils-ping \
+    bash-completion && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up a non-root user (Best Practice for Docker 2025)
+# Many tools (like Chromium or VLC based tools) refuse to run as root.
+RUN useradd -m kali && \
+    echo "kali:kali" | chpasswd && \
+    usermod -aG sudo kali && \
+    chsh -s /bin/bash kali
+
+# Switch to the new user
+USER kali
+WORKDIR /home/kali
+
+# Set the entrypoint to bash
+ENTRYPOINT ["/bin/bash"]
