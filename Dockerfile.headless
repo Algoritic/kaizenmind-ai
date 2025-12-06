@@ -1,0 +1,47 @@
+# Use the official Kali Linux rolling image (most up-to-date)
+FROM kalilinux/kali-rolling
+
+# Set metadata
+LABEL maintainer="kali-mcp-user"
+LABEL version="2025.1-headless"
+LABEL description="Kali Linux Headless Docker image optimized for AI Agents (MCP)."
+
+# Set environment variables to prevent interactive prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1. Update the package list
+# 2. Install 'kali-linux-headless' (Best for Agents/CLI)
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends \
+    kali-linux-headless \
+    python3-pip \
+    pciutils \
+    net-tools \
+    iputils-ping \
+    bash-completion && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up a non-root user (Best Practice)
+# Agents should generally run as non-root unless specific escalation is required
+RUN useradd -m kali && \
+    echo "kali:kali" | chpasswd && \
+    usermod -aG sudo kali && \
+    chsh -s /bin/bash kali
+
+# Switch to the new user
+USER kali
+WORKDIR /home/kali
+
+# Setup MCP Server
+COPY --chown=kali:kali mcp-server /opt/mcp-server
+RUN pip install -r /opt/mcp-server/requirements.txt --break-system-packages
+
+# Expose the default MCP port (usually 5000 or similar, adjust if your specific agent config differs)
+EXPOSE 8000
+
+# Set the entrypoint to bash
+# You can override this to run the mcp-server directly if preferred: 
+# ENTRYPOINT ["python3", "-m", "mcp_kali_server"]
+ENTRYPOINT ["python3", "/opt/mcp-server/server.py"]
